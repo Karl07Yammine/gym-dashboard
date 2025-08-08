@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>SkyGym Admin – Sign In</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body class="bg">
+  <div class="wrap">
+    <div class="card">
+      <div class="logo">SkyGym Admin</div>
+      <form action="/login" method="POST" class="form">
+        <label>Email</label>
+        <input name="email" type="email" placeholder="admin@skygym.local" required />
+
+        <label>Password</label>
+        <input name="password" type="password" placeholder="••••••••" required />
+
+        <button class="btn" type="submit">Sign in</button>
+      </form>
+      <p class="hint">Use your admin credentials. Sessions last 8 hours.</p>
+    </div>
+  </div>
+</body>
+</html>

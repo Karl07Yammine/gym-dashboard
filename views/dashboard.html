@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <title>Dashboard – Scan QR</title>
+  <link rel="stylesheet" href="/css/styles.css"/>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <meta name="theme-color" content="#0b0f14">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <style>
+    .photo {
+      width: 140px; height: 140px; border-radius: 16px; overflow: hidden; background:#0f1624;
+      display: none; /* hidden until we have a photo */
+      margin: 8px auto 0;
+      border: 1px solid #25324a;
+    }
+    .photo img { width: 100%; height: 100%; object-fit: cover; display:block; }
+    .pill { display:inline-block; padding:4px 10px; border-radius:999px; font-size:12px; margin-left:6px; }
+    .pill.ok { background:#1f6e41; }
+    .pill.bad { background:#6e1f2b; }
+  </style>
+</head>
+<body class="bg">
+    <div class="topbar">
+        <div class="brand">SkyGym</div>
+              <nav>
+         <a class="btn-outline" href="/create-user">Create User</a>
+         <a class="btn-outline" href="/create-membership">Membership</a>
+         <form action="/logout" method="POST" style="display:inline;">
+            <button class="btn-outline" type="submit">Log out</button>
+         </form>
+      </nav>
+      </div>
+      
+
+  <div class="container">
+    <div class="card">
+      <h2>Scan QR</h2>
+
+      <div id="qrRegion" style="width:100%; max-width:420px; margin:auto;"></div>
+
+      <div class="mt small" style="display:flex; gap:8px; justify-content:center;">
+        <button id="switchBtn" class="btn-outline" type="button">Switch Camera</button>
+        <button id="stopBtn" class="btn-outline" type="button">Stop</button>
+      </div>
+
+      <div class="photo" id="memberPhoto"><img alt="Member photo" id="memberPhotoImg"></div>
+
+      <div class="card mt" style="background:#0f1624;">
+        <div id="scanResult" class="small">Point the camera at a QR code…</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/qr.js"></script>
+</body>
+</html>

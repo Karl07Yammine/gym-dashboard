@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8"/>
+   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+   <title>Create Membership</title>
+   <link rel="stylesheet" href="/css/styles.css"/>
+   <meta name="theme-color" content="#0b0f14">
+   <meta name="apple-mobile-web-app-capable" content="yes">
+   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+   <style>
+      .membership-type {
+         display: flex;
+         gap: 12px;
+         margin: 16px 0;
+      }
+      .membership-type label {
+         flex: 1;
+         padding: 12px;
+         border: 1px solid #27324a;
+         border-radius: 12px;
+         background: #0f1624;
+         cursor: pointer;
+         text-align: center;
+         font-size: 14px;
+         transition: all 0.2s;
+      }
+      .membership-type input[type="radio"] {
+         display: none;
+      }
+      .membership-type input[type="radio"]:checked + label {
+         border-color: #3b82f6;
+         background: #1e3a8a;
+         color: #fff;
+      }
+      .months-input {
+         display: none;
+      }
+      .months-input.show {
+         display: block;
+      }
+      .status {
+         padding: 12px;
+         border-radius: 12px;
+         margin-top: 16px;
+         font-size: 14px;
+      }
+      .status.success {
+         background: #1f6e41;
+         color: #fff;
+      }
+      .status.error {
+         background: #6e1f2b;
+         color: #fff;
+      }
+   </style>
+</head>
+<body class="bg">
+   <div class="topbar">
+      <div class="brand">SkyGym</div>
+      <nav>
+         <a class="btn-outline" href="/dashboard">Scanner</a>
+         <a class="btn-outline" href="/create-user">Create User</a>
+      </nav>
+   </div>
+
+   <div class="container">
+      <div class="card">
+         <h2>Create Membership</h2>
+         <form id="membershipForm">
+            <label>Member ID (6 digits)</label>
+            <input id="userId" name="user_id" type="text" placeholder="000123" pattern="[0-9]{6}" required />
+
+            <label>Membership Type</label>
+            <div class="membership-type">
+               <input type="radio" id="daily" name="type" value="daily" checked>
+               <label for="daily">Daily Pass</label>
+               
+               <input type="radio" id="monthly" name="type" value="monthly">
+               <label for="monthly">Monthly</label>
+            </div>
+
+            <div class="months-input" id="monthsInput">
+               <label>Number of Months</label>
+               <input name="months" type="number" min="1" max="12" value="1" />
+            </div>
+
+            <button class="btn" type="submit">Create Membership</button>
+         </form>
+
+         <div id="statusBox" class="hint"></div>
+      </div>
+   </div>
+
+   <script>
+      const form = document.getElementById('membershipForm');
+      const statusBox = document.getElementById('statusBox');
+      const monthsInput = document.getElementById('monthsInput');
+      const dailyRadio = document.getElementById('daily');
+      const monthlyRadio = document.getElementById('monthly');
+
+      // Show/hide months input based on membership type
+      function toggleMonthsInput() {
+         if (monthlyRadio.checked) {
+            monthsInput.classList.add('show');
+         } else {
+            monthsInput.classList.remove('show');
+         }
+      }
+
+      dailyRadio.addEventListener('change', toggleMonthsInput);
+      monthlyRadio.addEventListener('change', toggleMonthsInput);
+
+      form.addEventListener('submit', async (e) => {
+         e.preventDefault();
+         
+         const userId = document.getElementById('userId').value.trim();
+         const type = document.querySelector('input[name="type"]:checked').value;
+         const months = document.querySelector('input[name="months"]').value;
+
+         if (!/^\d{6}$/.test(userId)) {
+            showStatus('Member ID must be exactly 6 digits.', 'error');
+            return;
+         }
+
+         showStatus('Creating membership...', '');
+
+         try {
+            let endpoint, body;
+            
+            if (type === 'daily') {
+               endpoint = '/api/passes/daily';
+               body = { user_id: userId };
+            } else {
+               endpoint = '/api/memberships/monthly';
+               body = { user_id: userId, months: parseInt(months) };
+            }
+
+            const res = await fetch(endpoint, {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify(body)
+            });
+
+            const data = await res.json();
+            
+            if (!res.ok || !data.ok) {
+               showStatus(data.message || 'Failed to create membership.', 'error');
+               return;
+            }
+
+            const endDate = new Date(data.membership.endAt).toLocaleDateString();
+            const message = type === 'daily' 
+               ? `Daily pass created for ${userId}. Expires ${endDate}.`
+               : `${months} month${months > 1 ? 's' : ''} membership created for ${userId}. Expires ${endDate}.`;
+            
+            showStatus(message, 'success');
+            form.reset();
+            toggleMonthsInput();
+            
+         } catch (err) {
+            showStatus('Server error: ' + err, 'error');
+         }
+      });
+
+      function showStatus(message, type) {
+         statusBox.textContent = message;
+         statusBox.className = type ? `status ${type}` : 'hint';
+      }
+   </script>
+</body>
+</html>
