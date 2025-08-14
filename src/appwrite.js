@@ -94,7 +94,7 @@ function isMembershipActive(m) {
     return m.status === 'active' && ends >= Date.now();
 }
 async function createMembership({ user_id, status = 'active', startAt, endAt }) {
-    return databases.createDocument(DB_ID, MEMBERSHIPS, ID.unique(), { user_id, status, startAt, endAt });
+    return databases.createDocument(DB_ID, MEMBERSHIPS, ID.unique(), { user_id, status, startAt, endAt, location: 'skygym' });
 }
 async function createMonthlyMembership({ user_id, months = 1 }) {
     const start = new Date();
@@ -125,8 +125,13 @@ async function findOpenLog(user_id) {
 }
 function getMinutesSinceMidnight() {
     const now = new Date();
-    return now.getHours() * 60 + now.getMinutes();
+    const options = { timeZone: 'Asia/Beirut', hour: '2-digit', minute: '2-digit', hour12: false };
+    const parts = new Intl.DateTimeFormat('en-GB', options).formatToParts(now);
+    const hours = parseInt(parts.find(p => p.type === 'hour').value, 10);
+    const minutes = parseInt(parts.find(p => p.type === 'minute').value, 10);
+    return hours * 60 + minutes;
 }
+
 
 async function createCheckIn(user_id) {
     const nowMinutes = getMinutesSinceMidnight();

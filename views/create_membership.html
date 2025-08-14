@@ -9,50 +9,71 @@
    <meta name="apple-mobile-web-app-capable" content="yes">
    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
    <style>
-      .membership-type {
-         display: flex;
-         gap: 12px;
-         margin: 16px 0;
+      :root{
+        --bg:#0b0f14; --card:#0f1624; --line:#233044; --text:#e8eef7; --muted:#9fb0c7;
+        --accent:#4da3ff; --accent-2:#2d7fe0; --good:#1f6e41; --bad:#6e1f2b;
+        --radius:14px;
       }
-      .membership-type label {
-         flex: 1;
-         padding: 12px;
-         border: 1px solid #27324a;
-         border-radius: 12px;
-         background: #0f1624;
-         cursor: pointer;
-         text-align: center;
-         font-size: 14px;
-         transition: all 0.2s;
+      html,body{height:100%}
+      body.bg{
+        margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial,sans-serif;
+        background:linear-gradient(180deg,#0b0f14,#0d1422 100%); color:var(--text);
       }
-      .membership-type input[type="radio"] {
-         display: none;
+      .topbar{
+        display:flex; align-items:center; justify-content:space-between;
+        padding:12px 16px; border-bottom:1px solid var(--line);
+        position:sticky; top:0; backdrop-filter:saturate(120%) blur(6px);
+        background:rgba(11,15,20,.65);
       }
-      .membership-type input[type="radio"]:checked + label {
-         border-color: #3b82f6;
-         background: #1e3a8a;
-         color: #fff;
+      .brand{font-weight:700}
+      nav{display:flex; gap:8px}
+      .btn-outline{
+        border:1px solid var(--line); color:var(--text); text-decoration:none; padding:8px 12px; border-radius:10px; font-size:14px;
       }
-      .months-input {
-         display: none;
+      .container{max-width:560px; margin:24px auto; padding:0 16px}
+      .card{
+        background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+        padding:18px; box-shadow:0 6px 18px rgba(0,0,0,.25);
       }
-      .months-input.show {
-         display: block;
+      h2{margin:0 0 12px; font-size:20px}
+
+      form{display:grid; gap:10px}
+      label{font-size:13px; color:var(--muted)}
+      input[type="text"], input[type="number"]{
+        width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:#0c1320; color:var(--text); font-size:14px;
       }
-      .status {
-         padding: 12px;
-         border-radius: 12px;
-         margin-top: 16px;
-         font-size: 14px;
+      input:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(77,163,255,.15)}
+
+      .membership-type{display:flex; gap:10px; margin:6px 0 2px}
+      .membership-type input[type="radio"]{display:none}
+      .chip{
+        flex:1; padding:12px; border:1px solid var(--line); border-radius:12px; background:#0c1320; text-align:center; font-size:14px; cursor:pointer;
+        transition:transform .05s ease, border-color .15s ease, background .15s ease;
+        user-select:none;
       }
-      .status.success {
-         background: #1f6e41;
-         color: #fff;
+      .chip:hover{transform:translateY(-1px)}
+      #daily:checked + label, #monthly:checked + label{
+        border-color:var(--accent); background:#10233f;
       }
-      .status.error {
-         background: #6e1f2b;
-         color: #fff;
+
+      .months-wrap{
+        overflow:hidden; transition:max-height .18s ease;
+        max-height:0;
       }
+      .months-wrap.show{max-height:120px}
+
+      .btn{
+        padding:10px 14px; background:var(--accent); color:#08101d; border:none; border-radius:12px; font-weight:600; cursor:pointer;
+      }
+      .btn:hover{background:var(--accent-2)}
+      .btn[disabled]{opacity:.6; cursor:not-allowed}
+
+      .hint{color:var(--muted); font-size:13px; margin-top:8px}
+      .status{
+        padding:10px; border-radius:10px; border:1px solid var(--line); background:#0c1320; font-size:13px; margin-top:12px;
+      }
+      .status.success{border-color:rgba(31,110,65,.5)}
+      .status.error{border-color:rgba(110,31,43,.55); color:#ffdbe0}
    </style>
 </head>
 <body class="bg">
@@ -67,106 +88,116 @@
    <div class="container">
       <div class="card">
          <h2>Create Membership</h2>
-         <form id="membershipForm">
+         <form id="membershipForm" novalidate>
             <label>Member ID (6 digits)</label>
-            <input id="userId" name="user_id" type="text" placeholder="000123" pattern="[0-9]{6}" required />
+            <input id="userId" name="user_id" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="000123" required />
 
             <label>Membership Type</label>
             <div class="membership-type">
                <input type="radio" id="daily" name="type" value="daily" checked>
-               <label for="daily">Daily Pass</label>
-               
+               <label for="daily" class="chip">Daily Pass</label>
+
                <input type="radio" id="monthly" name="type" value="monthly">
-               <label for="monthly">Monthly</label>
+               <label for="monthly" class="chip">Monthly</label>
             </div>
 
-            <div class="months-input" id="monthsInput">
+            <div class="months-wrap" id="monthsWrap" aria-hidden="true">
                <label>Number of Months</label>
-               <input name="months" type="number" min="1" max="12" value="1" />
+               <input id="months" name="months" type="number" min="1" max="12" value="1" />
             </div>
 
-            <button class="btn" type="submit">Create Membership</button>
+            <button class="btn" id="submitBtn" type="submit">Create Membership</button>
          </form>
 
-         <div id="statusBox" class="hint"></div>
+         <p class="hint">Daily = 24 hours from purchase. Monthly extends by whole months from today.</p>
+         <div id="statusBox" class="status" style="display:none;"></div>
       </div>
    </div>
 
    <script>
       const form = document.getElementById('membershipForm');
       const statusBox = document.getElementById('statusBox');
-      const monthsInput = document.getElementById('monthsInput');
+      const monthsWrap = document.getElementById('monthsWrap');
       const dailyRadio = document.getElementById('daily');
       const monthlyRadio = document.getElementById('monthly');
+      const submitBtn = document.getElementById('submitBtn');
+      const userIdEl = document.getElementById('userId');
+      const monthsEl = document.getElementById('months');
 
-      // Show/hide months input based on membership type
-      function toggleMonthsInput() {
-         if (monthlyRadio.checked) {
-            monthsInput.classList.add('show');
-         } else {
-            monthsInput.classList.remove('show');
-         }
+      function showMonths(){
+        const show = monthlyRadio.checked;
+        monthsWrap.classList.toggle('show', show);
+        monthsWrap.setAttribute('aria-hidden', String(!show));
       }
+      dailyRadio.addEventListener('change', showMonths);
+      monthlyRadio.addEventListener('change', showMonths);
+      showMonths();
 
-      dailyRadio.addEventListener('change', toggleMonthsInput);
-      monthlyRadio.addEventListener('change', toggleMonthsInput);
-
-      form.addEventListener('submit', async (e) => {
-         e.preventDefault();
-         
-         const userId = document.getElementById('userId').value.trim();
-         const type = document.querySelector('input[name="type"]:checked').value;
-         const months = document.querySelector('input[name="months"]').value;
-
-         if (!/^\d{6}$/.test(userId)) {
-            showStatus('Member ID must be exactly 6 digits.', 'error');
-            return;
-         }
-
-         showStatus('Creating membership...', '');
-
-         try {
-            let endpoint, body;
-            
-            if (type === 'daily') {
-               endpoint = '/api/passes/daily';
-               body = { user_id: userId };
-            } else {
-               endpoint = '/api/memberships/monthly';
-               body = { user_id: userId, months: parseInt(months) };
-            }
-
-            const res = await fetch(endpoint, {
-               method: 'POST',
-               headers: { 'Content-Type': 'application/json' },
-               body: JSON.stringify(body)
-            });
-
-            const data = await res.json();
-            
-            if (!res.ok || !data.ok) {
-               showStatus(data.message || 'Failed to create membership.', 'error');
-               return;
-            }
-
-            const endDate = new Date(data.membership.endAt).toLocaleDateString();
-            const message = type === 'daily' 
-               ? `Daily pass created for ${userId}. Expires ${endDate}.`
-               : `${months} month${months > 1 ? 's' : ''} membership created for ${userId}. Expires ${endDate}.`;
-            
-            showStatus(message, 'success');
-            form.reset();
-            toggleMonthsInput();
-            
-         } catch (err) {
-            showStatus('Server error: ' + err, 'error');
-         }
+      // keep input strictly numeric (6 digits)
+      userIdEl.addEventListener('input', () => {
+        userIdEl.value = userIdEl.value.replace(/\D/g,'').slice(0,6);
       });
 
-      function showStatus(message, type) {
-         statusBox.textContent = message;
-         statusBox.className = type ? `status ${type}` : 'hint';
+      function setStatus(message, type){
+        statusBox.style.display = 'block';
+        statusBox.className = 'status ' + (type || '');
+        statusBox.textContent = message;
       }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const userId = userIdEl.value.trim();
+        const type = document.querySelector('input[name="type"]:checked').value;
+        const months = parseInt(monthsEl.value || '1', 10);
+
+        if (!/^\d{6}$/.test(userId)) {
+          setStatus('Member ID must be exactly 6 digits.', 'error');
+          return;
+        }
+        if (type === 'monthly' && !(months >= 1 && months <= 12)) {
+          setStatus('Months must be between 1 and 12.', 'error');
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Creating…';
+        setStatus('Creating membership…');
+
+        try {
+          const endpoint = type === 'daily' ? '/api/passes/daily' : '/api/memberships/monthly';
+          const body = type === 'daily'
+            ? { user_id: userId }
+            : { user_id: userId, months };
+
+          const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+          const data = await res.json().catch(() => ({}));
+
+          if (!res.ok || !data.ok) {
+            setStatus(data.message || 'Failed to create membership.', 'error');
+            return;
+          }
+
+          const end = data.membership?.endAt ? new Date(data.membership.endAt) : null;
+          const endDate = end ? end.toLocaleDateString() : '(unknown date)';
+          const msg = type === 'daily'
+            ? `Daily pass created for ${userId}. Expires ${endDate}.`
+            : `${months} month${months>1?'s':''} membership created for ${userId}. Expires ${endDate}.`;
+
+          setStatus(msg, 'success');
+          form.reset();
+          showMonths();
+        } catch (err) {
+          setStatus('Server error: ' + err, 'error');
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Create Membership';
+        }
+      });
    </script>
 </body>
 </html>
