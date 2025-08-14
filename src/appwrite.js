@@ -123,24 +123,31 @@ async function findOpenLog(user_id) {
     ]);
     return res.total ? res.documents[0] : null;
 }
+function getMinutesSinceMidnight() {
+    const now = new Date();
+    return now.getHours() * 60 + now.getMinutes();
+}
+
 async function createCheckIn(user_id) {
-    const now = Date.now();
+    const nowMinutes = getMinutesSinceMidnight();
     const doc = await databases.createDocument(DB_ID, LOGS, ID.unique(), {
         user_id,
         date: todayStr(),
-        checkInTime: now
+        checkInTime: nowMinutes
     });
     return { action: 'checkin', doc };
 }
+
 async function closeCheckOut(openLog) {
-    const out = Date.now();
-    const mins = Math.max(0, Math.round((out - (openLog.checkInTime || out)) / 60000));
+    const outMinutes = getMinutesSinceMidnight();
+    const minsWorked = Math.max(0, outMinutes - (openLog.checkInTime || outMinutes));
     const updated = await databases.updateDocument(DB_ID, LOGS, openLog.$id, {
-        checkoutTime: out,
-        workedMinutes: mins
+        checkoutTime: outMinutes,
+        workedMinutes: minsWorked
     });
     return { action: 'checkout', doc: updated };
 }
+
 
 module.exports = {
     client,
